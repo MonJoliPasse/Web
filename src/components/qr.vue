@@ -124,11 +124,13 @@ export default defineComponent({
       this.refresh();
     },
   },
-  mounted() {
-    console.log(this.image);
-  },
+  async mounted() {},
   created() {},
   methods: {
+    changeTxtButton() {
+      var btn = document.querySelector(".download-btn");
+      if (btn) btn.innerHTML = "Télécharger";
+    },
     onUploadFile(event: { target: { files: any[] } }) {
       this.image = URL.createObjectURL(event.target.files[0]);
       this.refresh();
@@ -138,6 +140,8 @@ export default defineComponent({
       this.forceRendering = false;
       await this.sleep(50);
       this.forceRendering = true;
+      await this.sleep(500);
+      this.changeTxtButton();
     },
     async selectImage(imageName: any) {
       this.forceRendering = false;
@@ -146,6 +150,8 @@ export default defineComponent({
       // this.qrCodeData = "qrCodeData";
       this.image = require(`@/assets/memes/${imageName}.png`);
       this.forceRendering = true;
+      await this.sleep(500);
+      this.changeTxtButton();
     },
     sleep: function (ms: number | undefined) {
       return new Promise((resolve) => setTimeout(resolve, ms));
