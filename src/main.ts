@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-const VueGtag = require('vue-gtag').default
+import VueGtag from 'vue-gtag'
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
