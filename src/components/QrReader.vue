@@ -1,9 +1,11 @@
 <template>
   <div class="hello">
     <div style="">
-      <div class="h-100 d-inline-block" style="width: 100%">
+      <div id="reader" width="600px"></div>
+
+      <!-- <div class="h-100 d-inline-block" style="width: 100%">
         <div id="reader"></div>
-      </div>
+      </div> -->
     </div>
 
     <div class="container-xxl"></div>
@@ -14,7 +16,7 @@
 import { Options, Vue } from "vue-class-component";
 import qr from "./qr.vue";
 // To use Html5QrcodeScanner (more info below)
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 
 // To use Html5Qrcode (more info below)
 // import { Html5Qrcode } from "html5-qrcode";
@@ -50,12 +52,22 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
       // console.warn(`Code scan error = ${error}`);
     }
 
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader",
-      { fps: 10, qrbox: { width: 400, height: 400 } },
-      /* verbose= */ false
+    const html5QrCode = new Html5Qrcode("reader");
+    const config = { fps: 10, qrbox: { width: 400, height: 400 } };
+    // If you want to prefer back camera
+    html5QrCode.start(
+      { facingMode: "environment" },
+      config,
+      onScanSuccess,
+      onScanFailure
     );
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+    // let html5QrcodeScanner = new Html5QrcodeScanner(
+    //   "reader",
+    //   { fps: 10, qrbox: { width: 400, height: 400 } },
+    //   /* verbose= */ false
+    // );
+    // html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
     setInterval(function () {
       context.deleteManualUpload();
