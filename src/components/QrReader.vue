@@ -12,8 +12,12 @@
       </button>
     </div>
     <h2 v-if="cameraPermission == 'granted'">Étape 1 : Scannez votre passe</h2>
+
+    <!-- <qrcode-stream @detect="onDetect"></qrcode-stream> -->
+
     <div class="h-100 d-inline-block" style="width: 100%">
       <div id="reader"></div>
+      <div class="loading-indicator" v-if="loading">Loading...</div>
     </div>
 
     <div class="container-xxl"></div>
@@ -24,7 +28,7 @@
 import { Options, Vue } from "vue-class-component";
 import qr from "./qr.vue";
 // To use Html5QrcodeScanner (more info below)
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 
 // To use Html5Qrcode (more info below)
 // import { Html5Qrcode } from "html5-qrcode";
@@ -88,9 +92,14 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
         // for example:
         // console.warn(`Code scan error = ${error}`);
       }
-
+      const formatsToSupport = [Html5QrcodeSupportedFormats.QR_CODE];
       const html5QrCode = new Html5Qrcode("reader");
-      const config = { fps: 10, qrbox: { width: 400, height: 400 } };
+      const config = {
+        formatsToSupport: formatsToSupport,
+        fps: 10,
+        aspectRatio: 1.777778,
+        // qrbox: { width: 400, height: 400 },
+      };
       // If you want to prefer back camera
       html5QrCode.start(
         { facingMode: "environment" },
