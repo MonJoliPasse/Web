@@ -1,8 +1,5 @@
 <template>
   <div class="hello">
-    <!-- <button type="button" class="btn btn-primary">Primary</button> -->
-    <!-- <QrcodeStream /> -->
-
     <div style="">
       <div class="h-100 d-inline-block" style="width: 100%">
         <div id="reader"></div>
@@ -29,6 +26,11 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
   props: {
     msg: String,
   },
+  data() {
+    return {
+      el: "#app",
+    };
+  },
   mounted() {
     // this.$emit("childToParent", "ssssss");
 
@@ -37,6 +39,8 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
       // handle the scanned code as you like, for example:
       console.log(`Code matched = ${decodedText}`, decodedResult);
 
+      context.scrollToElement();
+      window.navigator.vibrate(30); // vibre pendant 200ms
       context.$emit("childToParent", decodedText);
     }
     // eslint-disable-next-line no-unused-vars
@@ -52,6 +56,27 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
       /* verbose= */ false
     );
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+    setInterval(function () {
+      context.deleteManualUpload();
+    }, 500);
+  },
+  methods: {
+    deleteManualUpload() {
+      var e = document.getElementById("reader__dashboard_section_swaplink");
+      var p = e?.parentElement;
+      if (p) p.style.display = "none";
+    },
+    async scrollToElement() {
+      await this.sleep(150);
+      window.scrollTo(
+        0,
+        document.body.scrollHeight || document.documentElement.scrollHeight
+      );
+    },
+    sleep: function (ms: number | undefined) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
   },
 })
 export default class HelloWorld extends Vue {
@@ -61,6 +86,9 @@ export default class HelloWorld extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+#reader__dashboard {
+  display: none !important;
+}
 h3 {
   margin: 40px 0 0;
 }
