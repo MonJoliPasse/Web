@@ -3,5 +3,5 @@ module.exports = {
   devServer: {
     https: true,
   },
-  publicPath: "/MonJoliPasse-Web/",
+  publicPath: "/web/",
 };
