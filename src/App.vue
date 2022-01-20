@@ -113,8 +113,6 @@ import Footer from "./components/footer.vue";
   },
   methods: {
     onQrCodeChange(decodedText: any) {
-      // console.log("onQrCodeChange");
-      // console.log(decodedText);
       this.decodedText = decodedText;
     },
   },

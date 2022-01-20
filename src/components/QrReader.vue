@@ -1,11 +1,19 @@
 <template>
   <div class="hello">
-    <div style="">
-      <div id="reader" width="600px"></div>
-
-      <!-- <div class="h-100 d-inline-block" style="width: 100%">
-        <div id="reader"></div>
-      </div> -->
+    <!-- {{ cameraPermission }} -->
+    <div class="d-grid gap-2">
+      <button
+        v-if="cameraPermission == 'prompt'"
+        v-on:click="askCameraPerm()"
+        type="button"
+        class="btn btn-lg btn-primary"
+      >
+        Autoriser la camera
+      </button>
+    </div>
+    <h2 v-if="cameraPermission == 'granted'">Étape 1 : Scannez votre passe</h2>
+    <div class="h-100 d-inline-block" style="width: 100%">
+      <div id="reader"></div>
     </div>
 
     <div class="container-xxl"></div>
@@ -31,49 +39,66 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
   data() {
     return {
       el: "#app",
+      cameraPermission: "prompt",
     };
   },
-  mounted() {
-    // this.$emit("childToParent", "ssssss");
-
+  async mounted() {
     const context = this;
-    function onScanSuccess(decodedText: any, decodedResult: any) {
-      // handle the scanned code as you like, for example:
-      console.log(`Code matched = ${decodedText}`, decodedResult);
+    // eslint-disable-next-line no-undef
+    const permissionName = "camera" as PermissionName;
 
-      context.scrollToElement();
-      window.navigator.vibrate(30); // vibre pendant 200ms
-      context.$emit("childToParent", decodedText);
-    }
-    // eslint-disable-next-line no-unused-vars
-    function onScanFailure(error: any) {
-      // handle scan failure, usually better to ignore and keep scanning.
-      // for example:
-      // console.warn(`Code scan error = ${error}`);
-    }
-
-    const html5QrCode = new Html5Qrcode("reader");
-    const config = { fps: 10, qrbox: { width: 400, height: 400 } };
-    // If you want to prefer back camera
-    html5QrCode.start(
-      { facingMode: "environment" },
-      config,
-      onScanSuccess,
-      onScanFailure
-    );
-
-    // let html5QrcodeScanner = new Html5QrcodeScanner(
-    //   "reader",
-    //   { fps: 10, qrbox: { width: 400, height: 400 } },
-    //   /* verbose= */ false
-    // );
-    // html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    var perm = await navigator.permissions.query({ name: permissionName });
+    console.log(perm.state);
+    this.cameraPermission = perm.state;
+    if (this.cameraPermission == "granted") this.initScanner();
 
     setInterval(function () {
       context.deleteManualUpload();
     }, 500);
   },
   methods: {
+    async askCameraPerm() {
+      var context = this;
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then(function () {
+          context.cameraPermission = "granted";
+          context.initScanner();
+        })
+        .catch(function (err) {
+          context.cameraPermission = "denied";
+          console.log(err);
+        });
+    },
+    initScanner() {
+      console.log("initscanner");
+      const context = this;
+
+      function onScanSuccess(decodedText: any, decodedResult: any) {
+        // handle the scanned code as you like, for example:
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+
+        context.scrollToElement();
+        window.navigator.vibrate(30); // vibre pendant 200ms
+        context.$emit("childToParent", decodedText);
+      }
+      // eslint-disable-next-line no-unused-vars
+      function onScanFailure(error: any) {
+        // handle scan failure, usually better to ignore and keep scanning.
+        // for example:
+        // console.warn(`Code scan error = ${error}`);
+      }
+
+      const html5QrCode = new Html5Qrcode("reader");
+      const config = { fps: 10, qrbox: { width: 400, height: 400 } };
+      // If you want to prefer back camera
+      html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess,
+        onScanFailure
+      );
+    },
     deleteManualUpload() {
       var e = document.getElementById("reader__dashboard_section_swaplink");
       var p = e?.parentElement;

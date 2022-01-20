@@ -3,6 +3,8 @@
     {{ qrCodeData }} -->
   <!-- <div v-show="qrCodeData" class="container"> -->
 
+  <h2>Étape 2 : Customisez</h2>
+
   <div class="d-flex justify-content-between">
     <div class="">
       <div class="dropdown">
