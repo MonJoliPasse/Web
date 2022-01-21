@@ -1,15 +1,14 @@
 <template>
   <!-- qrCodeData QR.vue
     {{ qrCodeData }} -->
-  <!-- <div v-show="qrCodeData" class="container"> -->
+  <div v-show="qrCodeData" class="container">
+    <div class="d-grid">
+      <!-- Or -->
+      <h2>Étape 2 : Customisez</h2>
 
-  <h2>Étape 2 : Customisez</h2>
-
-  <div class="d-flex justify-content-between">
-    <div class="">
-      <div class="dropdown">
+      <div class="dropdown w-100">
         <button
-          class="btn btn-secondary dropdown-toggle px-2"
+          class="w-100 btn btn-secondary btn-lg dropdown-toggle px-2"
           type="button"
           id="dropdownMenuButton1"
           data-bs-toggle="dropdown"
@@ -48,50 +47,58 @@
       </div>
     </div>
 
-    <div class=""></div>
-    <div class=""></div>
-  </div>
+    <div class="d-flex justify-content-between">
+      <div class=""></div>
 
-  <br />
-  <div class="d-flex justify-content-between">
-    <input
-      class="form-control"
-      @change="onUploadFile"
-      accept="image/jpeg, image/png"
-      type="file"
-      id="formFile"
-    />
-  </div>
-  <br />
-  <div class="beta d-flex justify-content-between">
-    <div class="">
-      <VueQr3
-        v-if="forceRendering"
-        :width="1024"
-        :height="1024"
-        :data="qrCodeData"
-        :qrOptions="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'H' }"
-        :imageOptions="{
-          hideBackgroundDots: false,
-          imageSize: 0.8,
-          margin: 0,
-        }"
-        :dotsOptions="{
-          type: 'square',
-          color: '#000000',
-        }"
-        :backgroundOptions="{ color: '#ffffff' }"
-        :image="image"
-        :cornersSquareOptions="{ type: 'square', color: '#000000' }"
-        :cornersDotOptions="{ type: undefined, color: '#000000' }"
-        fileExt="png"
-        :download="true"
-        myclass="my-qur"
-        imgclass="img-qr"
-        downloadButton="mt-3 download-btn t-2 btn btn-primary btn-lg"
-        :downloadOptions="{ name: 'mon-joli-pass', extension: 'png' }"
-      >
-      </VueQr3>
+      <div class=""></div>
+      <div class=""></div>
+    </div>
+
+    <br />
+    <div class="d-flex justify-content-between">
+      <label class="w-100 btn btn-lg btn-primary">
+        <i class="bi bi-cloud-arrow-up"></i>
+        <b-icon-upload />&nbsp;&nbsp; Importer une image<input
+          type="file"
+          accept="image/jpeg, image/png"
+          @change="onUploadFile"
+          hidden
+        />
+      </label>
+    </div>
+    <br />
+    <div class="beta d-flex justify-content-between">
+      <div class="w-100">
+        <VueQr3
+          v-if="forceRendering"
+          :data="qrCodeData"
+          :qrOptions="{
+            typeNumber: 0,
+            mode: 'Byte',
+            errorCorrectionLevel: 'H',
+          }"
+          :imageOptions="{
+            hideBackgroundDots: false,
+            imageSize: 0.8,
+            margin: 0,
+          }"
+          :dotsOptions="{
+            type: 'square',
+            color: '#000000',
+          }"
+          :backgroundOptions="{ color: '#ffffff' }"
+          :image="image"
+          :cornersSquareOptions="{ type: 'square', color: '#000000' }"
+          :cornersDotOptions="{ type: undefined, color: '#000000' }"
+          fileExt="png"
+          :download="true"
+          myclass="my-qur w-100"
+          imgclass="img-qr"
+          downloadButton="mt-3 download-btn t-2 btn btn-primary btn-lg"
+          :downloadOptions="{ name: 'mon-joli-pass', extension: 'png' }"
+        >
+        </VueQr3>
+      </div>
     </div>
   </div>
   <!-- {{ forceRendering }} -->
@@ -164,10 +171,10 @@ export default defineComponent({
 
 <style>
 .my-qur img {
-  height: 270px;
+  width: 100%;
 }
 .download-btn {
-  width: 270px;
+  width: 100%;
 }
 .beta {
   color: yellow-300;

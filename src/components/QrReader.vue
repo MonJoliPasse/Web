@@ -1,42 +1,89 @@
 <template>
   <div class="hello">
     <!-- {{ cameraPermission }} -->
-    <div class="d-grid gap-2">
-      <button
-        v-if="cameraPermission == 'prompt'"
-        v-on:click="askCameraPerm()"
-        type="button"
-        class="btn btn-lg btn-primary"
-      >
-        Autoriser la camera
-      </button>
+    <div class="d-grid">
+      <h2>Étape 1 : Importer votre passe</h2>
+      <label class="btn btn-lg btn-primary">
+        <b-icon-upload />&nbsp;&nbsp; Importer mon passe<input
+          type="file"
+          @change="previewFiles"
+          hidden
+        />
+      </label>
+
+      <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+          <path
+            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+          />
+        </symbol>
+        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+          <path
+            d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"
+          />
+        </symbol>
+        <symbol
+          id="exclamation-triangle-fill"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
+          />
+        </symbol>
+      </svg>
+
+      <div v-if="isLastScanSuccess != null" class="mt-4">
+        <div
+          v-if="isLastScanSuccess"
+          class="alert alert-success d-flex align-items-center"
+          role="alert"
+        >
+          <svg
+            class="bi flex-shrink-0 me-2"
+            width="24"
+            height="24"
+            role="img"
+            aria-label="Success:"
+          >
+            <use xlink:href="#check-circle-fill" />
+          </svg>
+          <div>
+            Votre passe à été importer avec succès. Vous pouvez maintenant le
+            personnaliser !
+          </div>
+        </div>
+        <div
+          v-else
+          class="alert alert-warning d-flex align-items-center"
+          role="alert"
+        >
+          <svg
+            class="bi flex-shrink-0 me-2"
+            width="24"
+            height="24"
+            role="img"
+            aria-label="Warning:"
+          >
+            <use xlink:href="#exclamation-triangle-fill" />
+          </svg>
+          <div>
+            Impossible de lire de détecter le QR code. Veuillez en essayer un
+            autre.
+          </div>
+        </div>
+      </div>
     </div>
-    <h2 v-if="cameraPermission == 'granted'">Étape 1 : Scannez votre passe</h2>
-
-    <!-- <qrcode-stream @detect="onDetect"></qrcode-stream> -->
-
-    <div class="h-100 d-inline-block" style="width: 100%">
-      <div id="reader"></div>
-      <div class="loading-indicator" v-if="loading">Loading...</div>
-    </div>
-
-    <div class="container-xxl"></div>
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import qr from "./qr.vue";
-// To use Html5QrcodeScanner (more info below)
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
-
-// To use Html5Qrcode (more info below)
-// import { Html5Qrcode } from "html5-qrcode";
-
-import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
+import qr from "./QrCustomiser.vue";
+import { BrowserQRCodeReader } from "@zxing/browser";
 
 @Options({
-  components: { qr, QrcodeStream, QrcodeDropZone, QrcodeCapture },
+  components: { qr },
   props: {
     msg: String,
   },
@@ -44,23 +91,28 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
     return {
       el: "#app",
       cameraPermission: "prompt",
+      codeReader: null,
+      isLastScanSuccess: null,
     };
   },
   async mounted() {
-    const context = this;
-    // eslint-disable-next-line no-undef
-    const permissionName = "camera" as PermissionName;
-
-    var perm = await navigator.permissions.query({ name: permissionName });
-    console.log(perm.state);
-    this.cameraPermission = perm.state;
-    if (this.cameraPermission == "granted") this.initScanner();
-
-    setInterval(function () {
-      context.deleteManualUpload();
-    }, 500);
+    this.codeReader = new BrowserQRCodeReader();
+    console.log(this.codeReader);
   },
   methods: {
+    async previewFiles(event: { target: { files: any } }) {
+      var url = URL.createObjectURL(event.target.files[0]);
+      try {
+        const resultImage = await this.codeReader.decodeFromImageUrl(url);
+        this.$emit("onQrCodeChange", resultImage.text);
+        console.log(resultImage);
+        this.isLastScanSuccess = true;
+      } catch (e) {
+        this.isLastScanSuccess = false;
+      }
+    },
+
+    async decode() {},
     async askCameraPerm() {
       var context = this;
       navigator.mediaDevices
@@ -74,55 +126,6 @@ import { QrcodeStream, QrcodeDropZone, QrcodeCapture } from "vue-qrcode-reader";
           console.log(err);
         });
     },
-    initScanner() {
-      console.log("initscanner");
-      const context = this;
-
-      function onScanSuccess(decodedText: any, decodedResult: any) {
-        // handle the scanned code as you like, for example:
-        console.log(`Code matched = ${decodedText}`, decodedResult);
-
-        context.scrollToElement();
-        window.navigator.vibrate(30); // vibre pendant 200ms
-        context.$emit("childToParent", decodedText);
-      }
-      // eslint-disable-next-line no-unused-vars
-      function onScanFailure(error: any) {
-        // handle scan failure, usually better to ignore and keep scanning.
-        // for example:
-        // console.warn(`Code scan error = ${error}`);
-      }
-      const formatsToSupport = [Html5QrcodeSupportedFormats.QR_CODE];
-      const html5QrCode = new Html5Qrcode("reader");
-      const config = {
-        formatsToSupport: formatsToSupport,
-        fps: 10,
-        aspectRatio: 1.777778,
-        // qrbox: { width: 400, height: 400 },
-      };
-      // If you want to prefer back camera
-      html5QrCode.start(
-        { facingMode: "environment" },
-        config,
-        onScanSuccess,
-        onScanFailure
-      );
-    },
-    deleteManualUpload() {
-      var e = document.getElementById("reader__dashboard_section_swaplink");
-      var p = e?.parentElement;
-      if (p) p.style.display = "none";
-    },
-    async scrollToElement() {
-      await this.sleep(150);
-      window.scrollTo(
-        0,
-        document.body.scrollHeight || document.documentElement.scrollHeight
-      );
-    },
-    sleep: function (ms: number | undefined) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    },
   },
 })
 export default class HelloWorld extends Vue {
@@ -131,22 +134,4 @@ export default class HelloWorld extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-#reader__dashboard {
-  display: none !important;
-}
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
-</style>
+<style scoped></style>

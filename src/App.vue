@@ -26,7 +26,7 @@
     </div>
   </nav>
   <!-- Header-->
-  <header class="bg-dark py-5">
+  <header class="bg-dark py-4">
     <div class="container">
       <div class="row gx-5 justify-content-center">
         <div class="col-lg-6">
@@ -55,14 +55,10 @@
     <div class="container px-5 my-5">
       <div class="row">
         <div class="col-sm-8">
-          <QrReader v-on:childToParent="onQrCodeChange" />
+          <QrReader v-on:onQrCodeChange="onQrCodeChange" />
         </div>
         <div class="col-sm-4">
-          <HelloWorld
-            v-show="decodedText"
-            :decodedData="decodedText"
-            :msg="decodedText"
-          />
+          <QrCustomiser :qrCodeData="decodedText" />
         </div>
       </div>
     </div>
@@ -94,17 +90,13 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import HelloWorld from "./components/HelloWorld.vue";
+import QrCustomiser from "./components/QrCustomiser.vue";
 import QrReader from "./components/QrReader.vue";
-import Nav from "./components/nav.vue";
-import Footer from "./components/footer.vue";
 
 @Options({
   components: {
-    HelloWorld,
+    QrCustomiser,
     QrReader,
-    Nav,
-    Footer,
   },
   data() {
     return {
