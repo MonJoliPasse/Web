@@ -2,7 +2,7 @@
   <!-- qrCodeData QR.vue
     {{ qrCodeData }} -->
   <div v-show="qrCodeData">
-    <div class="d-grid">
+    <div id="customise" class="d-grid">
       <!-- Or -->
       <h2>Étape 2 : Customisez</h2>
 

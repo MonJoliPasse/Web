@@ -5,6 +5,28 @@
     <div class="d-grid">
       <h2>Étape 1 : Importer votre passe</h2>
 
+      <label class="btn btn-lg btn-primary px-2">
+        <b-icon-upload />&nbsp;&nbsp; Importer une image<input
+          type="file"
+          accept="image/jpeg, image/png"
+          @change="previewFiles"
+          hidden
+        />
+      </label>
+      <button
+        class="w-100 btn btn-primary btn-lg mt-3"
+        type="button"
+        id="dropdownMenuButton1"
+        @click="toggleCamera()"
+        aria-expanded="false"
+        data-bs-toggle="button"
+        autocomplete="off"
+      >
+        <b-icon-camera />&nbsp;&nbsp; Importer avec la camera
+      </button>
+      <video v-show="camera" class="w-100 mt-3" id="webcam-preview"></video>
+      <div class="mb-4"></div>
+
       <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
           <path
@@ -67,29 +89,6 @@
           </div>
         </div>
       </div>
-
-      <label class="btn btn-lg btn-primary px-2">
-        <b-icon-upload />&nbsp;&nbsp; Importer une image<input
-          type="file"
-          accept="image/jpeg, image/png"
-          @change="previewFiles"
-          hidden
-        />
-      </label>
-      <button
-        class="w-100 btn btn-primary btn-lg mt-3"
-        type="button"
-        id="dropdownMenuButton1"
-        @click="toggleCamera()"
-        aria-expanded="false"
-        data-bs-toggle="button"
-        autocomplete="off"
-      >
-        <b-icon-camera />&nbsp;&nbsp; Importer avec la camera
-      </button>
-
-      <video v-show="camera" class="w-100 mt-3" id="webcam-preview"></video>
-      <div class="mb-4"></div>
     </div>
   </div>
 </template>
@@ -98,6 +97,7 @@
 import { Options, Vue } from "vue-class-component";
 import qr from "./QrCustomiser.vue";
 import { BrowserQRCodeReader } from "@zxing/browser";
+
 import {
   ChecksumException,
   FormatException,
@@ -120,47 +120,7 @@ import {
   },
   async mounted() {
     const codeReader = new BrowserQRCodeReader();
-
-    codeReader.decodeFromVideoDevice(
-      undefined,
-      "webcam-preview",
-      (result, err) => {
-        if (result) {
-          // properly decoded qr code
-          console.log("Found QR code!", result);
-          this.$emit("onQrCodeChange", result.getText());
-          console.log(result.getText());
-          this.isLastScanSuccess = true;
-        }
-
-        if (err) {
-          // As long as this error belongs into one of the following categories
-          // the code reader is going to continue as excepted. Any other error
-          // will stop the decoding loop.
-          //
-          // Excepted Exceptions:
-          //
-          //  - NotFoundException
-          //  - ChecksumException
-          //  - FormatException
-
-          if (err instanceof NotFoundException) {
-            console.log("No QR code found.");
-          }
-
-          if (err instanceof ChecksumException) {
-            console.log("A code was found, but it's read value was not valid.");
-          }
-
-          if (err instanceof FormatException) {
-            console.log("A code was found, but it was in a invalid format.");
-          }
-        }
-      }
-    );
-
-    this.codeReader = new BrowserQRCodeReader();
-    console.log(this.codeReader);
+    this.startScanner(codeReader);
   },
   methods: {
     toggleCamera() {
@@ -181,6 +141,39 @@ import {
     },
 
     async decode() {},
+    startScanner(codeReader: BrowserQRCodeReader) {
+      codeReader.decodeFromVideoDevice(
+        undefined,
+        "webcam-preview",
+        (result, err) => {
+          if (result) {
+            // properly decoded qr code
+            console.log("Found QR code!", result);
+            this.$emit("onQrCodeChange", result.getText());
+            console.log(result.getText());
+            this.isLastScanSuccess = true;
+            this.camera = false;
+            var qre = document.getElementById("customise");
+            if (qre) qre.scrollIntoView();
+          }
+
+          if (err) {
+            if (err instanceof NotFoundException) {
+              console.log("No QR code found.");
+            }
+            if (err instanceof ChecksumException) {
+              console.log(
+                "A code was found, but it's read value was not valid."
+              );
+            }
+            if (err instanceof FormatException) {
+              console.log("A code was found, but it was in a invalid format.");
+            }
+          }
+        }
+      );
+    },
+
     async askCameraPerm() {
       var context = this;
       navigator.mediaDevices
