@@ -5,27 +5,6 @@
     <div class="d-grid">
       <h2>Étape 1 : Importer votre passe</h2>
 
-      <label class="btn btn-lg btn-primary px-2">
-        <b-icon-upload />&nbsp;&nbsp; À partir d'un fichier<input
-          type="file"
-          accept="image/jpeg, image/png"
-          @change="previewFiles"
-          hidden
-        />
-      </label>
-      <button
-        class="w-100 btn btn-primary btn-lg py-2"
-        type="button"
-        id="dropdownMenuButton1"
-        @click="toggleCamera()"
-        aria-expanded="false"
-        data-bs-toggle="button"
-        autocomplete="off"
-      >
-        <b-icon-camera />&nbsp;&nbsp; À partir de la camera
-      </button>
-      <h3></h3>
-      <video v-show="camera" class="w-100" id="webcam-preview"></video>
       <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
           <path
@@ -48,7 +27,7 @@
         </symbol>
       </svg>
 
-      <div v-if="isLastScanSuccess != null" class="mt-4">
+      <div v-if="isLastScanSuccess != null">
         <div
           v-if="isLastScanSuccess"
           class="alert alert-success d-flex align-items-center"
@@ -88,6 +67,29 @@
           </div>
         </div>
       </div>
+
+      <label class="btn btn-lg btn-primary px-2">
+        <b-icon-upload />&nbsp;&nbsp; Importer une image<input
+          type="file"
+          accept="image/jpeg, image/png"
+          @change="previewFiles"
+          hidden
+        />
+      </label>
+      <button
+        class="w-100 btn btn-primary btn-lg mt-3"
+        type="button"
+        id="dropdownMenuButton1"
+        @click="toggleCamera()"
+        aria-expanded="false"
+        data-bs-toggle="button"
+        autocomplete="off"
+      >
+        <b-icon-camera />&nbsp;&nbsp; Importer avec la camera
+      </button>
+
+      <video v-show="camera" class="w-100 mt-3" id="webcam-preview"></video>
+      <div class="mb-4"></div>
     </div>
   </div>
 </template>

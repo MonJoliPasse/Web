@@ -8,7 +8,7 @@
 
       <div class="dropdown w-100">
         <button
-          class="w-100 btn btn-secondary btn-lg dropdown-toggle px-2"
+          class="w-100 btn btn-primary btn-lg dropdown-toggle px-2"
           type="button"
           id="dropdownMenuButton1"
           data-bs-toggle="dropdown"
@@ -43,6 +43,11 @@
               >Baby</a
             >
           </li>
+          <li>
+            <a class="dropdown-item" v-on:click="this.openFileBrowser()">
+              <b-icon-upload />&nbsp;&nbsp; Importer une image</a
+            >
+          </li>
         </ul>
       </div>
     </div>
@@ -54,20 +59,16 @@
       <div class=""></div>
     </div>
 
-    <br />
-    <div class="d-flex justify-content-between">
-      <label class="w-100 btn btn-lg btn-primary">
-        <i class="bi bi-cloud-arrow-up"></i>
-        <b-icon-upload />&nbsp;&nbsp; Importer une image<input
-          type="file"
-          accept="image/jpeg, image/png"
-          @change="onUploadFile"
-          hidden
-        />
-      </label>
-    </div>
-    <br />
-    <div class="beta d-flex justify-content-between">
+    <input
+      v-show="false"
+      id="browse"
+      type="file"
+      accept="image/jpeg, image/png"
+      @change="onUploadFile"
+      hidden
+    />
+
+    <div class="beta d-flex justify-content-between mt-3">
       <div class="w-100">
         <VueQr3
           v-if="forceRendering"
@@ -152,6 +153,12 @@ export default defineComponent({
       await this.sleep(500);
       this.changeTxtButton();
     },
+    openFileBrowser() {
+      var e = document.getElementById("browse");
+      if (e) {
+        e.click();
+      }
+    },
     async selectImage(imageName: any) {
       this.forceRendering = false;
       await this.sleep(50);
@@ -170,6 +177,9 @@ export default defineComponent({
 </script>
 
 <style>
+.hidden {
+  display: none;
+}
 .my-qur img {
   width: 100%;
 }
