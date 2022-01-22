@@ -71,6 +71,9 @@
     <div class="beta d-flex justify-content-between mt-3">
       <div class="w-100">
         <VueQr3
+          :width="1024"
+          :height="1024"
+          :margin="10"
           v-if="forceRendering"
           :data="qrCodeData"
           :qrOptions="{

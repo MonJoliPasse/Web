@@ -5,16 +5,16 @@
     <div class="d-grid">
       <h2>Étape 1 : Importer votre passe</h2>
 
-      <label class="btn btn-lg btn-primary px-2">
+      <!-- <label class="btn btn-lg btn-primary px-2">
         <b-icon-upload />&nbsp;&nbsp; Importer une image<input
           type="file"
           accept="image/jpeg, image/png"
           @change="previewFiles"
           hidden
         />
-      </label>
+      </label> -->
       <button
-        class="w-100 btn btn-primary btn-lg mt-3"
+        class="w-100 btn btn-primary btn-lg"
         type="button"
         id="dropdownMenuButton1"
         @click="toggleCamera()"
@@ -22,7 +22,7 @@
         data-bs-toggle="button"
         autocomplete="off"
       >
-        <b-icon-camera />&nbsp;&nbsp; Importer avec la camera
+        <b-icon-camera />&nbsp;&nbsp; Scanner avec la camera
       </button>
       <video v-show="camera" class="w-100 mt-3" id="webcam-preview"></video>
       <div class="mb-4"></div>
@@ -118,14 +118,13 @@ import {
       camera: false,
     };
   },
-  async mounted() {
-    const codeReader = new BrowserQRCodeReader();
-    this.startScanner(codeReader);
-  },
+  async mounted() {},
   methods: {
     toggleCamera() {
-      if (!this.camera) this.camera = true;
-      else this.camera = false;
+      if (!this.camera) {
+        this.camera = true;
+        this.startScanner();
+      } else this.camera = false;
     },
     async previewFiles(event: { target: { files: any } }) {
       var url = URL.createObjectURL(event.target.files[0]);
@@ -141,11 +140,12 @@ import {
     },
 
     async decode() {},
-    startScanner(codeReader: BrowserQRCodeReader) {
-      codeReader.decodeFromVideoDevice(
+    startScanner() {
+      this.codeReader = new BrowserQRCodeReader();
+      this.codeReader.decodeFromVideoDevice(
         undefined,
         "webcam-preview",
-        (result, err) => {
+        (result: { getText: () => any }, err: any) => {
           if (result) {
             // properly decoded qr code
             console.log("Found QR code!", result);
