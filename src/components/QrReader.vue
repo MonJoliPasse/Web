@@ -1,16 +1,31 @@
 <template>
   <div class="hello">
     <!-- {{ cameraPermission }} -->
+
     <div class="d-grid">
       <h2>Étape 1 : Importer votre passe</h2>
-      <label class="btn btn-lg btn-primary">
-        <b-icon-upload />&nbsp;&nbsp; Importer mon passe<input
+
+      <label class="btn btn-lg btn-primary px-2">
+        <b-icon-upload />&nbsp;&nbsp; À partir d'un fichier<input
           type="file"
+          accept="image/jpeg, image/png"
           @change="previewFiles"
           hidden
         />
       </label>
-
+      <button
+        class="w-100 btn btn-primary btn-lg py-2"
+        type="button"
+        id="dropdownMenuButton1"
+        @click="toggleCamera()"
+        aria-expanded="false"
+        data-bs-toggle="button"
+        autocomplete="off"
+      >
+        <b-icon-camera />&nbsp;&nbsp; À partir de la camera
+      </button>
+      <h3></h3>
+      <video v-show="camera" class="w-100" id="webcam-preview"></video>
       <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
           <path
@@ -81,6 +96,11 @@
 import { Options, Vue } from "vue-class-component";
 import qr from "./QrCustomiser.vue";
 import { BrowserQRCodeReader } from "@zxing/browser";
+import {
+  ChecksumException,
+  FormatException,
+  NotFoundException,
+} from "@zxing/library";
 
 @Options({
   components: { qr },
@@ -93,13 +113,58 @@ import { BrowserQRCodeReader } from "@zxing/browser";
       cameraPermission: "prompt",
       codeReader: null,
       isLastScanSuccess: null,
+      camera: false,
     };
   },
   async mounted() {
+    const codeReader = new BrowserQRCodeReader();
+
+    codeReader.decodeFromVideoDevice(
+      undefined,
+      "webcam-preview",
+      (result, err) => {
+        if (result) {
+          // properly decoded qr code
+          console.log("Found QR code!", result);
+          this.$emit("onQrCodeChange", result.getText());
+          console.log(result.getText());
+          this.isLastScanSuccess = true;
+        }
+
+        if (err) {
+          // As long as this error belongs into one of the following categories
+          // the code reader is going to continue as excepted. Any other error
+          // will stop the decoding loop.
+          //
+          // Excepted Exceptions:
+          //
+          //  - NotFoundException
+          //  - ChecksumException
+          //  - FormatException
+
+          if (err instanceof NotFoundException) {
+            console.log("No QR code found.");
+          }
+
+          if (err instanceof ChecksumException) {
+            console.log("A code was found, but it's read value was not valid.");
+          }
+
+          if (err instanceof FormatException) {
+            console.log("A code was found, but it was in a invalid format.");
+          }
+        }
+      }
+    );
+
     this.codeReader = new BrowserQRCodeReader();
     console.log(this.codeReader);
   },
   methods: {
+    toggleCamera() {
+      if (!this.camera) this.camera = true;
+      else this.camera = false;
+    },
     async previewFiles(event: { target: { files: any } }) {
       var url = URL.createObjectURL(event.target.files[0]);
       try {
@@ -108,6 +173,7 @@ import { BrowserQRCodeReader } from "@zxing/browser";
         console.log(resultImage);
         this.isLastScanSuccess = true;
       } catch (e) {
+        console.log(e);
         this.isLastScanSuccess = false;
       }
     },
