@@ -52,7 +52,7 @@
   </header>
   <!-- Features section-->
   <section class="border-bottom" id="features">
-    <div class="container px-5 my-5">
+    <div class="container px-3 my-5">
       <div class="row">
         <div class="col-sm-8">
           <QrReader v-on:onQrCodeChange="onQrCodeChange" />
