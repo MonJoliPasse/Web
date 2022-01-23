@@ -133,6 +133,7 @@ import {
         this.$emit("onQrCodeChange", resultImage.text);
         console.log(resultImage);
         this.isLastScanSuccess = true;
+        this.$gtag.event("newScan", { method: "fromCamera" });
       } catch (e) {
         console.log(e);
         this.isLastScanSuccess = false;
