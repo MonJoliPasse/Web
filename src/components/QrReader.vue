@@ -4,28 +4,45 @@
 
     <div class="d-grid">
       <h2>Étape 1 : Importer votre passe</h2>
+      <img
+        v-show="false"
+        id="imgQR"
+        class="fit-picture"
+        src=""
+        alt="Grapefruit slice atop a pile of other slices"
+      />
 
-      <!-- <label class="btn btn-lg btn-primary px-2">
-        <b-icon-upload />&nbsp;&nbsp; Importer une image<input
-          type="file"
-          accept="image/jpeg, image/png"
-          @change="previewFiles"
-          hidden
-        />
-      </label> -->
-      <button
-        class="w-100 btn btn-primary btn-lg"
-        type="button"
-        id="dropdownMenuButton1"
-        @click="toggleCamera()"
-        aria-expanded="false"
-        data-bs-toggle="button"
-        autocomplete="off"
-      >
-        <b-icon-camera />&nbsp;&nbsp; Scanner avec la camera
-      </button>
-      <video v-show="camera" class="w-100 mt-3" id="webcam-preview"></video>
-      <div class="mb-4"></div>
+      <div class="row">
+        <div class="col-lg py-2">
+          <label class="w-100 btn btn-lg btn-primary px-2">
+            <b-icon-upload />&nbsp;&nbsp; Importer une image<input
+              type="file"
+              accept="image/jpeg, image/png"
+              @change="previewFiles"
+              hidden
+            />
+          </label>
+        </div>
+        <div class="col-lg py-2">
+          <button
+            class="w-100 btn btn-primary btn-lg"
+            type="button"
+            id="dropdownMenuButton1"
+            @click="toggleCamera()"
+            aria-expanded="false"
+            data-bs-toggle="button"
+            autocomplete="off"
+          >
+            <b-icon-camera />&nbsp;&nbsp; Scanner avec la camera
+          </button>
+        </div>
+      </div>
+
+      <video
+        v-show="camera"
+        class="w-100 round-border"
+        id="webcam-preview"
+      ></video>
 
       <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
@@ -52,7 +69,7 @@
       <div v-if="isLastScanSuccess != null">
         <div
           v-if="isLastScanSuccess"
-          class="alert alert-success d-flex align-items-center"
+          class="py-2 alert alert-success d-flex align-items-center"
           role="alert"
         >
           <svg
@@ -127,20 +144,52 @@ import {
       } else this.camera = false;
     },
     async previewFiles(event: { target: { files: any } }) {
-      var url = URL.createObjectURL(event.target.files[0]);
-      try {
-        const resultImage = await this.codeReader.decodeFromImageUrl(url);
-        this.$emit("onQrCodeChange", resultImage.text);
-        console.log(resultImage);
-        this.isLastScanSuccess = true;
-        this.$gtag.event("newScan", { method: "fromCamera" });
-      } catch (e) {
-        console.log(e);
-        this.isLastScanSuccess = false;
-      }
+      var context = this;
+      var selectedFile = event.target.files[0];
+
+      var reader = new FileReader();
+
+      var imgtag = document.getElementById("imgQR") as HTMLImageElement;
+      if (imgtag) imgtag.title = selectedFile.name;
+
+      reader.onload = function (event) {
+        if (event.target) {
+          // console.log(event.target.result);
+          imgtag.src = event.target.result as string;
+          context.decodeSingleImage();
+        }
+      };
+      reader.readAsDataURL(selectedFile);
     },
 
-    async decode() {},
+    async decodeSingleImage() {
+      console.log("decodeSingleImage");
+      const img = document.getElementById("imgQR") as HTMLImageElement;
+      if (this.codeReader == null) this.codeReader = new BrowserQRCodeReader();
+      console.log(img);
+
+      if (img) {
+        console.log(img.src);
+        this.codeReader
+          .decodeFromImageUrl(img.src)
+          .then((result: { text: string | null }) => {
+            this.isLastScanSuccess = true;
+            this.camera = false;
+            this.$emit("onQrCodeChange", result.text);
+
+            this.$gtag.event("newScan", { method: "fromFile" });
+            var qre = document.getElementById("customise");
+            if (qre) qre.scrollIntoView();
+            // console.log(result);
+          })
+          .catch((err: string | null) => {
+            this.$emit("onQrCodeChange", null);
+            // console.log(result.getText());
+            this.isLastScanSuccess = false;
+            console.error(err);
+          });
+      }
+    },
     startScanner() {
       this.codeReader = new BrowserQRCodeReader();
       this.codeReader.decodeFromVideoDevice(
@@ -151,9 +200,11 @@ import {
             // properly decoded qr code
             console.log("Found QR code!", result);
             this.$emit("onQrCodeChange", result.getText());
-            console.log(result.getText());
+            // console.log(result.getText());
             this.isLastScanSuccess = true;
             this.camera = false;
+            this.$gtag.event("newScan", { method: "fromCamera" });
+
             var qre = document.getElementById("customise");
             if (qre) qre.scrollIntoView();
           }
@@ -195,5 +246,8 @@ export default class HelloWorld extends Vue {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped></style>
+<style>
+.round-border {
+  border-radius: 7px;
+}
+</style>

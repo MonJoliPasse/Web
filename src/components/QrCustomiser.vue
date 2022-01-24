@@ -6,7 +6,7 @@
       <!-- Or -->
       <h2>Étape 2 : Customisez</h2>
 
-      <div class="dropdown w-100">
+      <div class="dropdown w-100 py-2">
         <button
           class="w-100 btn btn-primary btn-lg dropdown-toggle px-2"
           type="button"
@@ -68,7 +68,7 @@
       hidden
     />
 
-    <div class="beta d-flex justify-content-between mt-3">
+    <div class="beta d-flex justify-content-between">
       <div class="w-100">
         <VueQr3
           :width="1024"

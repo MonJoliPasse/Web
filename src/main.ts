@@ -5,8 +5,6 @@ import { BootstrapIconsPlugin } from 'bootstrap-icons-vue';
 import { createGtm } from '@gtm-support/vue-gtm';
 import router from './router';
 
-
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
 
