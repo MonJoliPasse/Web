@@ -15,8 +15,11 @@ app.use(BootstrapIconsPlugin);
 
 app.use(VueGtag, {
   property: {
-    id: "UA-217737194-2"
-  }
+    id: "UA-217737194-1",
+    params: {
+            send_page_view: true
+        }
+  },
 });
 
 app.use(
