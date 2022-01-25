@@ -95,13 +95,25 @@
           :cornersSquareOptions="{ type: 'square', color: '#000000' }"
           :cornersDotOptions="{ type: undefined, color: '#000000' }"
           fileExt="png"
-          :download="true"
+          :download="false"
           myclass="my-qur w-100"
           imgclass="img-qr"
           downloadButton="mt-3 download-btn t-2 btn btn-primary btn-lg"
           :downloadOptions="{ name: 'mon-joli-pass', extension: 'png' }"
         >
         </VueQr3>
+
+        <button
+          class="w-100 btn btn-primary btn-lg mt-2"
+          type="button"
+          id="downloadButton"
+          @click="download()"
+          aria-expanded="false"
+          data-bs-toggle="button"
+          autocomplete="off"
+        >
+          <b-icon-download />&nbsp;&nbsp; Télécharger
+        </button>
       </div>
     </div>
   </div>
@@ -140,6 +152,19 @@ export default defineComponent({
   async mounted() {},
   created() {},
   methods: {
+    createFileAndLink(url: string) {
+      fetch(url)
+        .then((res) => res.blob())
+        .then((blob) => {
+          const file = new File([blob], "File name", { type: "image/png" });
+          var objectURL = URL.createObjectURL(file);
+
+          var a = document.createElement("a"); //Create <a>
+          a.href = objectURL;
+          a.download = "MonJoliPasse.png"; //File name Here
+          a.click(); //Downloaded file
+        });
+    },
     changeTxtButton() {
       var btn = document.querySelector(".download-btn");
       if (btn) btn.innerHTML = "Télécharger";
@@ -161,6 +186,12 @@ export default defineComponent({
       if (e) {
         e.click();
       }
+    },
+    download() {
+      var img = document.getElementsByClassName(
+        "img-qr"
+      )[0] as HTMLImageElement;
+      this.createFileAndLink(img.src);
     },
     async selectImage(imageName: any) {
       this.forceRendering = false;
