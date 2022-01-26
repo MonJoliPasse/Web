@@ -135,7 +135,11 @@ import {
       camera: false,
     };
   },
-  async mounted() {},
+  async mounted() {
+    // this.isLastScanSuccess = true;
+    // this.camera = false;
+    // this.$emit("onQrCodeChange", "d,dkndnkdn");
+  },
   methods: {
     toggleCamera() {
       if (!this.camera) {

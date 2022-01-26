@@ -1,6 +1,15 @@
 <template>
   <!-- qrCodeData QR.vue
     {{ qrCodeData }} -->
+
+  <a
+    id="downloadPhotoLink"
+    download="mon-joli-passe.jpg"
+    title="Download photo"
+    href="https://unsplash.com/photos/GH_JThjyz90/download?ixid=MnwxMjA3fDB8MXxhbGx8Mnx8fHx8fDJ8fDE2NDMxMTU2Mzk&amp;force=true"
+    ><span class="wl5gA">Download free</span></a
+  >
+
   <div v-show="qrCodeData">
     <div id="customise" class="d-grid">
       <!-- Or -->
@@ -144,24 +153,66 @@ export default defineComponent({
     return {};
   },
   watch: {
-    qrCodeData() {
-      console.log("qrCodeData");
-      this.refresh();
+    async qrCodeData(value) {
+      await this.refresh();
+      console.log("qrCodeData" + value);
     },
   },
   async mounted() {},
   created() {},
   methods: {
+    async createBlobFromData64(data64: string) {
+      var res = await fetch(data64);
+      var blob = await res.blob();
+      var file = new File([blob], "file.png", { type: "image/png" });
+      return file;
+    },
+    async createDownloadLink() {
+      var data64 = this.convertQrCodeToData64();
+      var img = await this.createBlobFromData64(data64);
+      let formData = new FormData();
+      formData.append("img", img);
+      const requestOptions = {
+        method: "POST",
+        body: formData,
+      };
+      const response = await fetch(
+        "http://localhost:8082/",
+        // "https://monjolipasse-server.herokuapp.com/",
+        requestOptions
+      );
+      const data = await response.json();
+      // window.location.href = "http://localhost:8082/c" + data.url;
+      console.log(data.name);
+      // alert(data.name);
+      var a = document.getElementById("downloadPhotoLink") as HTMLLinkElement;
+      console.log(a);
+      // a.href = `http://localhost:8082/download/${data.name}`;
+
+      // a.href = `https://monjolipasse-server.herokuapp.com/download/${data.fileName}`;
+    },
+    convertQrCodeToData64() {
+      var img = document.getElementsByClassName(
+        "img-qr"
+      )[0] as HTMLImageElement;
+      return img.src;
+    },
     createFileAndLink(url: string) {
       fetch(url)
         .then((res) => res.blob())
         .then((blob) => {
           const file = new File([blob], "File name", { type: "image/png" });
           var objectURL = URL.createObjectURL(file);
+          // window.location.href = "https://unsplash.com/";
 
-          var a = document.createElement("a"); //Create <a>
+          var a = document.getElementById(
+            "downloadPhotoLink"
+          ) as HTMLLinkElement;
+
+          console.log(a);
           a.href = objectURL;
-          a.download = "MonJoliPasse.png"; //File name Here
+          // alert(objectURL);
+          // a.download = "MonJoliPasse.png"; //File name Here
           a.click(); //Downloaded file
         });
     },
@@ -178,7 +229,7 @@ export default defineComponent({
       this.forceRendering = false;
       await this.sleep(50);
       this.forceRendering = true;
-      await this.sleep(500);
+      await this.sleep(100);
       this.changeTxtButton();
     },
     openFileBrowser() {
@@ -187,6 +238,12 @@ export default defineComponent({
         e.click();
       }
     },
+    onButtonDownloadClick() {
+      // var e = document.getElementById("myBtn");
+      // if (e) e.addEventListener("click", displayDate);
+      // this.createDownloadLink(file);
+    },
+
     download() {
       var img = document.getElementsByClassName(
         "img-qr"
@@ -200,7 +257,7 @@ export default defineComponent({
       // this.qrCodeData = "qrCodeData";
       this.image = require(`@/assets/memes/${imageName}.png`);
       this.forceRendering = true;
-      await this.sleep(500);
+      await this.sleep(100);
       this.changeTxtButton();
     },
     sleep: function (ms: number | undefined) {
@@ -211,6 +268,9 @@ export default defineComponent({
 </script>
 
 <style>
+#downloadPhotoLink {
+  display: none;
+}
 .hidden {
   display: none;
 }

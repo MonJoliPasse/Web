@@ -1,11 +1,17 @@
 import { createWebHistory, createRouter } from "vue-router";
-import App from "@/App.vue";
+import Main from "@/Main.vue";
+import BrowserNotCompatible from "@/BrowserNotCompatible.vue";
 
 const routes = [
   {
-    path: "/",
+    path: "/web",
     name: "Home",
-    component: App,
+    component: Main,
+  },
+  {
+    path: "/web/navigateur-incompatible",
+    name: "BrowserNotCompatible",
+    component: BrowserNotCompatible,
   },
 ];
 
