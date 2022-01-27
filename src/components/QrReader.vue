@@ -113,13 +113,7 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import qr from "./QrCustomiser.vue";
-import { BrowserQRCodeReader } from "@zxing/browser";
-
-import {
-  ChecksumException,
-  FormatException,
-  NotFoundException,
-} from "@zxing/library";
+import QrScanner from "qr-scanner"; // if installed via package and bundling with a module bundler like webpack or rollup
 
 @Options({
   components: { qr },
@@ -148,86 +142,42 @@ import {
       } else this.camera = false;
     },
     async previewFiles(event: { target: { files: any } }) {
-      var context = this;
+      // var context = this;
       var selectedFile = event.target.files[0];
+      QrScanner.scanImage(selectedFile)
+        .then((result: any) => {
+          this.isLastScanSuccess = true;
+          this.camera = false;
+          this.$emit("onQrCodeChange", result);
 
-      var reader = new FileReader();
-
-      var imgtag = document.getElementById("imgQR") as HTMLImageElement;
-      if (imgtag) imgtag.title = selectedFile.name;
-
-      reader.onload = function (event) {
-        if (event.target) {
-          // console.log(event.target.result);
-          imgtag.src = event.target.result as string;
-          context.decodeSingleImage();
-        }
-      };
-      reader.readAsDataURL(selectedFile);
+          this.$gtag.event("newScan", { method: "fromFile" });
+          var qre = document.getElementById("customise");
+          if (qre) qre.scrollIntoView();
+        })
+        .catch((error: any) => console.log(error || "No QR code found."));
     },
 
-    async decodeSingleImage() {
-      console.log("decodeSingleImage");
-      const img = document.getElementById("imgQR") as HTMLImageElement;
-      if (this.codeReader == null) this.codeReader = new BrowserQRCodeReader();
-      console.log(img);
+    async startScanner() {
+      console.log(await QrScanner.hasCamera());
+      var videoElem = document.getElementById(
+        "webcam-preview"
+      ) as HTMLVideoElement;
+      console.log(videoElem);
 
-      if (img) {
-        console.log(img.src);
-        this.codeReader
-          .decodeFromImageUrl(img.src)
-          .then((result: { text: string | null }) => {
-            this.isLastScanSuccess = true;
-            this.camera = false;
-            this.$emit("onQrCodeChange", result.text);
+      this.codeReader = new QrScanner(videoElem, (result) => {
+        this.codeReader.stop();
+        console.log("Found QR code!", result);
+        this.$emit("onQrCodeChange", result);
+        // console.log(result.getText());
+        this.isLastScanSuccess = true;
+        this.camera = false;
+        this.$gtag.event("newScan", { method: "fromCamera" });
 
-            this.$gtag.event("newScan", { method: "fromFile" });
-            var qre = document.getElementById("customise");
-            if (qre) qre.scrollIntoView();
-            // console.log(result);
-          })
-          .catch((err: string | null) => {
-            this.$emit("onQrCodeChange", null);
-            // console.log(result.getText());
-            this.isLastScanSuccess = false;
-            console.error(err);
-          });
-      }
-    },
-    startScanner() {
-      this.codeReader = new BrowserQRCodeReader();
-      this.codeReader.decodeFromVideoDevice(
-        undefined,
-        "webcam-preview",
-        (result: { getText: () => any }, err: any) => {
-          if (result) {
-            // properly decoded qr code
-            console.log("Found QR code!", result);
-            this.$emit("onQrCodeChange", result.getText());
-            // console.log(result.getText());
-            this.isLastScanSuccess = true;
-            this.camera = false;
-            this.$gtag.event("newScan", { method: "fromCamera" });
-
-            var qre = document.getElementById("customise");
-            if (qre) qre.scrollIntoView();
-          }
-
-          if (err) {
-            if (err instanceof NotFoundException) {
-              console.log("No QR code found.");
-            }
-            if (err instanceof ChecksumException) {
-              console.log(
-                "A code was found, but it's read value was not valid."
-              );
-            }
-            if (err instanceof FormatException) {
-              console.log("A code was found, but it was in a invalid format.");
-            }
-          }
-        }
-      );
+        var qre = document.getElementById("customise");
+        if (qre) qre.scrollIntoView();
+      });
+      this.codeReader.setCamera("environment"); // async
+      this.codeReader.start();
     },
 
     async askCameraPerm() {
